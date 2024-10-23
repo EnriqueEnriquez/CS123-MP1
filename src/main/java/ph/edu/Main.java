@@ -112,51 +112,39 @@ public class Main {
     }
 
     private static int evaluatePostfix(String postfixExpression) {
-        Stack<Integer> stack = new Stack<Integer>();
+        String[] elements = postfixExpression.split(" ");
+        Stack<Integer> numbers = new Stack<Integer>();
         int num1;
         int num2;
 
-        for (int index = 0; index < postfixExpression.length(); index++) {
-            char currentChar = postfixExpression.charAt(index);
-
-            if (currentChar == ' ') {
-                continue;
+        for (String expression : elements) {
+            if (expression.equals("+")) {
+                num1 = numbers.pop();
+                num2 = numbers.pop();
+                numbers.push(num2 + num1);
             }
-
-            else if (Character.isDigit(currentChar)) {
-                int startingIndex = index;
-                index++;
-                while (Character.isDigit(postfixExpression.charAt(index))) {
-                    index++;
-                }
-
-                int num = Integer.parseInt(postfixExpression.substring(startingIndex, index));
-                stack.push(num);
+            else if (expression.equals("-")) {
+                num1 = numbers.pop();
+                num2 = numbers.pop();
+                numbers.push(num2 - num1);
             }
-
+            else if (expression.equals("*")) {
+                num1 = numbers.pop();
+                num2 = numbers.pop();
+                numbers.push(num2 * num1);
+            }
+            else if (expression.equals("/")) {
+                num1 = numbers.pop();
+                num2 = numbers.pop();
+                numbers.push(num2 / num1);
+            }
             else {
-                num1 = stack.pop();
-                num2 = stack.pop();
-
-                switch (currentChar) {
-                    case '+':
-                        stack.push(num2 + num1);
-                        break;
-                    case '-':
-                        stack.push(num2 - num1);
-                        break;
-                    case '*':
-                        stack.push(num2 * num1);
-                        break;
-                    case '/':
-                        stack.push(num2 / num1);
-                        break;
-
-                }
-
+                numbers.push(Integer.parseInt(expression));
             }
         }
-        return stack.pop();
+
+        return numbers.pop();
     }
+
 
 }
