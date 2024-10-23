@@ -48,9 +48,7 @@ public class Main {
             char currentChar = infixExpression.charAt(index);
 
             if (currentChar == '+' || currentChar == '-' || currentChar == '*' || currentChar == '/') {
-                postfixExpression.append(" ");
-                postfixExpression.append(operand); // Append any operand before operator
-                operand = new StringBuilder(); // Reset operand
+                appendOperand(operand, postfixExpression);
 
                 // Pop operators from the stack with higher or equal precedence
                 while (!stack.empty() && equivalentValue(String.valueOf(currentChar)) <= equivalentValue(stack.peek())) {
@@ -65,27 +63,24 @@ public class Main {
             }
 
             else if (currentChar == ')') {
-                postfixExpression.append(" ");
-                postfixExpression.append(operand); // Append any operand before the ")"
-                operand = new StringBuilder(); // Reset operand
+                appendOperand(operand, postfixExpression);
 
                 while (!stack.peek().equals("(")) { // Pop all operators until opening parenthesis is found
+                    postfixExpression.append(" ");
                     postfixExpression.append(stack.pop());
                 }
                 stack.pop(); // Remove the '(' from stack
             }
 
             else if (currentChar == ' ') {
-                postfixExpression.append(operand); // Append operand
-                operand = new StringBuilder(); // Reset
+                appendOperand(operand, postfixExpression);
             }
 
             else {
                 operand.append(currentChar); // Assume it's part of an operand (e.g., digit or variable)
             }
         }
-        postfixExpression.append(" ");
-        postfixExpression.append(operand); // Append the last operand to the result
+        appendOperand(operand, postfixExpression); // append last operand if any
 
 
         while (!stack.empty()) { // Pop all remaining operators from the stack
@@ -93,7 +88,15 @@ public class Main {
             postfixExpression.append(stack.pop());
         }
 
-        return postfixExpression.toString(); // Corrected return statement
+        return postfixExpression.toString().trim();
+    }
+
+    private static void appendOperand(StringBuilder operand, StringBuilder postfixExpression) {
+        if (!operand.isEmpty()) {
+            postfixExpression.append(" ");
+            postfixExpression.append(operand);
+            operand.setLength(0); // Clear operand without changing the reference
+        }
     }
 
     private static int equivalentValue(String expression) {
@@ -109,38 +112,51 @@ public class Main {
     }
 
     private static int evaluatePostfix(String postfixExpression) {
-        String[] tokens = postfixExpression.split(" ");
-        Stack<Integer> numbers = new Stack<Integer>();
+        Stack<Integer> stack = new Stack<Integer>();
         int num1;
         int num2;
 
-        for (String expression : tokens) {
-            if (expression.equals("+")) {
-                num1 = numbers.pop();
-                num2 = numbers.pop();
-                numbers.push(num2 + num1);
+        for (int index = 0; index < postfixExpression.length(); index++) {
+            char currentChar = postfixExpression.charAt(index);
+
+            if (currentChar == ' ') {
+                continue;
             }
-            else if (expression.equals("-")) {
-                num1 = numbers.pop();
-                num2 = numbers.pop();
-                numbers.push(num2 - num1);
+
+            else if (Character.isDigit(currentChar)) {
+                int startingIndex = index;
+                index++;
+                while (Character.isDigit(postfixExpression.charAt(index))) {
+                    index++;
+                }
+
+                int num = Integer.parseInt(postfixExpression.substring(startingIndex, index));
+                stack.push(num);
             }
-            else if (expression.equals("*")) {
-                num1 = numbers.pop();
-                num2 = numbers.pop();
-                numbers.push(num2 * num1);
-            }
-            else if (expression.equals("/")) {
-                num1 = numbers.pop();
-                num2 = numbers.pop();
-                numbers.push(num2 / num1);
-            }
+
             else {
-                numbers.push(Integer.parseInt(expression));
+                num1 = stack.pop();
+                num2 = stack.pop();
+
+                switch (currentChar) {
+                    case '+':
+                        stack.push(num2 + num1);
+                        break;
+                    case '-':
+                        stack.push(num2 - num1);
+                        break;
+                    case '*':
+                        stack.push(num2 * num1);
+                        break;
+                    case '/':
+                        stack.push(num2 / num1);
+                        break;
+
+                }
+
             }
         }
-
-        return numbers.pop();
+        return stack.pop();
     }
 
 }
